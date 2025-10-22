@@ -3,7 +3,6 @@ import { FeedUI } from '@ui-pages';
 import { FC, useEffect } from 'react';
 import { useSelector, useDispatch } from '../../services/store';
 import { fetchFeeds } from '../../services/slices/feedSlice';
-import { fetchIngredients } from '../../services/slices/ingridientSlice';
 
 export const Feed: FC = () => {
   const dispatch = useDispatch();
@@ -11,7 +10,6 @@ export const Feed: FC = () => {
 
   useEffect(() => {
     dispatch(fetchFeeds());
-    dispatch(fetchIngredients());
   }, [dispatch]);
 
   if (loading || !orders.length) {

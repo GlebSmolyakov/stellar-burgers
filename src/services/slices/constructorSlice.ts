@@ -15,12 +15,20 @@ const burgerConstructor = createSlice({
   name: 'burgerConstructor',
   initialState,
   reducers: {
-    addIngredient: (state, action: PayloadAction<TIngredient>) => {
-      const item = { ...action.payload, id: crypto.randomUUID() };
-      if (item.type === 'bun') {
-        state.bun = item;
-      } else {
-        state.ingredients.push(item);
+    addIngredient: {
+      prepare: (ingredient: TIngredient) => ({
+        payload: {
+          ...ingredient,
+          id: crypto.randomUUID()
+        }
+      }),
+      reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
+        const item = action.payload;
+        if (item.type === 'bun') {
+          state.bun = item;
+        } else {
+          state.ingredients.push(item);
+        }
       }
     },
     removeIngredient: (state, action: PayloadAction<number>) => {
