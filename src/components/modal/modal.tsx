@@ -1,5 +1,5 @@
 import { FC, memo, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 
 import { TModalProps } from './type';
 import { ModalUI } from '@ui';
@@ -18,7 +18,7 @@ export const Modal: FC<TModalProps> = memo(({ title, onClose, children }) => {
     };
   }, [onClose]);
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <ModalUI title={title} onClose={onClose}>
       {children}
     </ModalUI>,
