@@ -14,18 +14,20 @@ const initialState: TUserOrdersState = {
   error: null
 };
 
-export const fetchUserOrders = createAsyncThunk(
-  'userOrders/fetch',
-  async (_, { rejectWithValue }) => {
-    try {
-      return await getOrdersApi();
-    } catch (error) {
-      return rejectWithValue(
-        (error as any).message || 'Ошибка загрузки заказов'
-      );
+export const fetchUserOrders = createAsyncThunk<
+  TOrder[],
+  void,
+  { rejectValue: string }
+>('userOrders/fetch', async (_, { rejectWithValue }) => {
+  try {
+    return await getOrdersApi();
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return rejectWithValue(error.message);
     }
+    return rejectWithValue('Ошибка загрузки заказов');
   }
-);
+});
 
 const userOrdersSlice = createSlice({
   name: 'userOrders',
@@ -43,7 +45,7 @@ const userOrdersSlice = createSlice({
       })
       .addCase(fetchUserOrders.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? 'Ошибка загрузки заказов';
       });
   }
 });

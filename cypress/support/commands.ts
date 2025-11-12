@@ -35,3 +35,26 @@
 //     }
 //   }
 // }
+Cypress.Commands.add('openMainPage', () => {
+  cy.intercept('GET', 'api/ingredients', { fixture: 'ingredients.json' }).as(
+    'getIngredients'
+  );
+  cy.visit('/');
+  cy.wait('@getIngredients');
+});
+
+Cypress.Commands.add('addIngredient', (index: number) => {
+  cy.get(`[data-cy="ingredient-${index}"]`)
+    .contains('button', 'Добавить')
+    .click();
+});
+
+Cypress.Commands.add('login', (email: string, password: string) => {
+  cy.get('input[type="email"]').type(email);
+  cy.get('input[type="password"]').type(password);
+  cy.contains('button', 'Войти').click();
+});
+
+Cypress.Commands.add('createOrder', () => {
+  cy.contains('button', 'Оформить заказ').click();
+});

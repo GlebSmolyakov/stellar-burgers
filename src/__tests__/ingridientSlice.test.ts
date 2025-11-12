@@ -64,7 +64,7 @@ describe('ingredients reducer', () => {
       const mockError = 'Network error';
       const action = {
         type: fetchIngredients.rejected.type,
-        error: { message: mockError }
+        payload: mockError
       };
       const state = ingredientsReducer(initialState, action);
 

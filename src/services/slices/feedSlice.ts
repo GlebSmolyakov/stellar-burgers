@@ -18,16 +18,18 @@ const initialState: TFeedState = {
   error: null
 };
 
-export const fetchFeeds = createAsyncThunk(
-  'feed/fetchFeeds',
-  async (_, { rejectWithValue }) => {
-    try {
-      return await getFeedsApi();
-    } catch (error) {
-      return rejectWithValue(error);
-    }
+export const fetchFeeds = createAsyncThunk<
+  { orders: TOrder[]; total: number; totalToday: number },
+  void,
+  { rejectValue: string }
+>('feed/fetchFeeds', async (_, { rejectWithValue }) => {
+  try {
+    return await getFeedsApi();
+  } catch (error: unknown) {
+    if (error instanceof Error) return rejectWithValue(error.message);
+    return rejectWithValue('Unknown error');
   }
-);
+});
 
 const feedSlice = createSlice({
   name: 'feed',
@@ -47,7 +49,7 @@ const feedSlice = createSlice({
       })
       .addCase(fetchFeeds.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Ошибка загрузки ленты заказов';
+        state.error = action.payload ?? 'Ошибка загрузки ленты заказов';
       });
   }
 });

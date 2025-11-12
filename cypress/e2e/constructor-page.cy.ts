@@ -1,34 +1,26 @@
-describe('бургер конструктор', () => {
+describe('Бургер конструктор', () => {
   beforeEach(() => {
-    cy.intercept('GET', 'api/ingredients', {
-      fixture: 'ingredients.json'
-    }).as('getIngredients');
-
-    cy.visit('/');
-    cy.wait('@getIngredients');
+    cy.openMainPage();
   });
 
-  it('добавление булки в конструктор', () => {
-    cy.get('[data-cy="ingredient-1"]').contains('button', 'Добавить').click();
-
+  it('добавление булки', () => {
+    cy.addIngredient(1);
     cy.get('[data-cy="constructor"]').should(
       'contain',
       'Краторная булка N-200i'
     );
   });
 
-  it('добавление ингредиента в конструктор', () => {
-    cy.get('[data-cy="ingredient-2"]').contains('button', 'Добавить').click();
-
+  it('добавление ингредиента', () => {
+    cy.addIngredient(2);
     cy.get('[data-cy="constructor"]').should(
       'contain',
       'Филе Люминесцентного тетраодонтимформа'
     );
   });
 
-  it('добавление соуса в конструктор', () => {
-    cy.get('[data-cy="ingredient-3"]').contains('button', 'Добавить').click();
-
+  it('добавление соуса', () => {
+    cy.addIngredient(3);
     cy.get('[data-cy="constructor"]').should(
       'contain',
       'Соус фирменный Space Sauce'
