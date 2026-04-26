@@ -14,19 +14,21 @@ const initialState: TOrderState = {
   error: null
 };
 
-export const orderBurger = createAsyncThunk(
-  'order/create',
-  async (ingredients: string[], { rejectWithValue }) => {
-    try {
-      const response = await orderBurgerApi(ingredients);
-      return response.order;
-    } catch (error) {
-      return rejectWithValue(
-        (error as any).message || 'Ошибка создания заказа'
-      );
+export const orderBurger = createAsyncThunk<
+  TOrder,
+  string[],
+  { rejectValue: string }
+>('order/create', async (ingredients, { rejectWithValue }) => {
+  try {
+    const response = await orderBurgerApi(ingredients);
+    return response.order;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return rejectWithValue(error.message);
     }
+    return rejectWithValue('Ошибка создания заказа');
   }
-);
+});
 
 const orderSlice = createSlice({
   name: 'order',
@@ -49,7 +51,7 @@ const orderSlice = createSlice({
       })
       .addCase(orderBurger.rejected, (state, action) => {
         state.orderRequest = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? 'Ошибка создания заказа';
       });
   }
 });

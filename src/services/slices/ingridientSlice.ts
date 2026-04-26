@@ -8,22 +8,24 @@ type TIngredientsState = {
   error: string | null;
 };
 
-const initialState: TIngredientsState = {
+export const initialState: TIngredientsState = {
   data: [],
   loading: false,
   error: null
 };
 
-export const fetchIngredients = createAsyncThunk(
-  'ingredients/fetchAll',
-  async (_, { rejectWithValue }) => {
-    try {
-      return await getIngredientsApi();
-    } catch (error) {
-      return rejectWithValue(error);
-    }
+export const fetchIngredients = createAsyncThunk<
+  TIngredient[],
+  void,
+  { rejectValue: string }
+>('ingredients/fetchAll', async (_, { rejectWithValue }) => {
+  try {
+    return await getIngredientsApi();
+  } catch (error: unknown) {
+    if (error instanceof Error) return rejectWithValue(error.message);
+    return rejectWithValue('Unknown error');
   }
-);
+});
 
 const ingredientsSlice = createSlice({
   name: 'ingredients',
@@ -41,7 +43,7 @@ const ingredientsSlice = createSlice({
       })
       .addCase(fetchIngredients.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Ошибка загрузки ингредиентов';
+        state.error = action.payload ?? 'Ошибка загрузки ингредиентов';
       });
   }
 });

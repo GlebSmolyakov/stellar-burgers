@@ -26,23 +26,25 @@ const initialState: TUserState = {
   authChecked: false
 };
 
-export const checkUserAuth = createAsyncThunk(
-  'user/checkAuth',
-  async (_, { rejectWithValue }) => {
-    try {
-      const accessToken = getCookie('accessToken');
+export const checkUserAuth = createAsyncThunk<
+  TUser,
+  void,
+  { rejectValue: string }
+>('user/checkAuth', async (_, { rejectWithValue }) => {
+  try {
+    const accessToken = getCookie('accessToken');
 
-      if (!accessToken) {
-        return rejectWithValue('No access token');
-      }
-
-      const response = await getUserApi();
-      return response.user;
-    } catch (error) {
-      return rejectWithValue('Not authenticated');
+    if (!accessToken) {
+      return rejectWithValue('No access token');
     }
+
+    const response = await getUserApi();
+    return response.user;
+  } catch (error: unknown) {
+    if (error instanceof Error) return rejectWithValue(error.message);
+    return rejectWithValue('Not authenticated');
   }
-);
+});
 
 export const registerUser = createAsyncThunk<
   TUser,
@@ -56,50 +58,54 @@ export const registerUser = createAsyncThunk<
     localStorage.setItem('refreshToken', res.refreshToken);
 
     return res.user;
-  } catch (err: any) {
-    return rejectWithValue(err.message || 'Ошибка регистрации');
+  } catch (error: unknown) {
+    if (error instanceof Error) return rejectWithValue(error.message);
+    return rejectWithValue('Ошибка регистрации');
   }
 });
 
-export const loginUser = createAsyncThunk(
-  'user/login',
-  async (loginData: { email: string; password: string }) => {
+export const loginUser = createAsyncThunk<
+  TUser,
+  { email: string; password: string },
+  { rejectValue: string }
+>('user/login', async (loginData, { rejectWithValue }) => {
+  try {
     const response = await loginUserApi(loginData);
 
     localStorage.setItem('refreshToken', response.refreshToken);
     setCookie('accessToken', response.accessToken);
 
     return response.user;
+  } catch (error: unknown) {
+    if (error instanceof Error) return rejectWithValue(error.message);
+    return rejectWithValue('Ошибка входа');
   }
-);
+});
 
-export const updateUser = createAsyncThunk(
-  'user/updateUser',
-  async (
-    userData: { name?: string; email?: string; password?: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await updateUserApi(userData);
-      return response.user;
-    } catch (error) {
-      return rejectWithValue(
-        (error as any).message || 'Ошибка обновления данных'
-      );
-    }
+export const updateUser = createAsyncThunk<
+  TUser,
+  { name?: string; email?: string; password?: string },
+  { rejectValue: string }
+>('user/updateUser', async (userData, { rejectWithValue }) => {
+  try {
+    const response = await updateUserApi(userData);
+    return response.user;
+  } catch (error: unknown) {
+    if (error instanceof Error) return rejectWithValue(error.message);
+    return rejectWithValue('Ошибка обновления данных');
   }
-);
+});
 
-export const logoutUser = createAsyncThunk(
+export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
   'user/logout',
   async (_, { rejectWithValue }) => {
     try {
       await logoutApi();
       localStorage.removeItem('refreshToken');
       deleteCookie('accessToken');
-      return null;
-    } catch (error) {
-      return rejectWithValue((error as any).message || 'Ошибка выхода');
+    } catch (error: unknown) {
+      if (error instanceof Error) return rejectWithValue(error.message);
+      return rejectWithValue('Ошибка выхода');
     }
   }
 );
@@ -133,7 +139,7 @@ const userSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || 'Ошибка регистрации';
+        state.error = action.payload ?? 'Ошибка регистрации';
       })
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
@@ -146,7 +152,7 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message || 'Ошибка входа';
+        state.error = action.payload ?? 'Ошибка входа';
       })
       .addCase(updateUser.pending, (state) => {
         state.error = null;
@@ -156,7 +162,7 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.error = action.payload as string;
+        state.error = action.payload ?? 'Ошибка обновления данных';
       })
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
@@ -169,7 +175,7 @@ const userSlice = createSlice({
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? 'Ошибка выхода';
       });
   }
 });
